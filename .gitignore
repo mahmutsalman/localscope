@@ -1,0 +1,25 @@
+# IDE files and directories
+.idea/
+*.iml
+*.iws
+
+# Maven build output
+backend/target/
+backend/dependency-reduced-pom.xml
+
+# H2 Database files (if stored in project, which ours is)
+backend/data/
+
+# Log files
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# npm/node related (if you were to add npm to frontend later)
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock 
