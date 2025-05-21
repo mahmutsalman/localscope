@@ -22,4 +22,7 @@ node_modules/
 npm-debug.log
 yarn-error.log
 package-lock.json
-yarn.lock 
+yarn.lock
+
+# Application properties
+backend/src/main/resources/application.properties 
