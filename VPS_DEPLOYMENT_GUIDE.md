@@ -398,7 +398,7 @@ Nginx will act as a reverse proxy, forwarding requests to your Spring Boot appli
         }
 
         location /api/ { # Or any other base path for your backend
-            proxy_pass http://localhost:8080/; # Assuming Spring Boot runs on 8080
+            proxy_pass http://localhost:8070/; # Assuming Spring Boot runs on 8070
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

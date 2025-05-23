@@ -6,6 +6,7 @@
 # Maven build output
 backend/target/
 backend/dependency-reduced-pom.xml
+target/
 
 # H2 Database files (if stored in project, which ours is)
 backend/data/
@@ -24,5 +25,11 @@ yarn-error.log
 package-lock.json
 yarn.lock
 
-# Application properties
-backend/src/main/resources/application.properties 
+# Application properties and resources (contains API keys)
+backend/src/main/resources/
+**/resources/
+
+# Basic files (development versions)
+frontend/css/stylesBasic.css
+frontend/js/appBasic.js
+frontend/indexBasic.html 
