@@ -6,7 +6,7 @@
 // Backend API URL
 // For production deployment, change this to '/api/places' (relative URL)
 // For local development, use 'http://localhost:8070/api/places'
-const API_URL = 'http://localhost:8070/api/places';
+const API_URL = '/api/places';
 
 // DOM elements
 const searchForm = document.getElementById('search-form');
