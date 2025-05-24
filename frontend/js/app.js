@@ -112,14 +112,43 @@ function fetchNearbyPlaces(longitude, latitude, radius) {
     fetch(url)
         .then(response => {
             if (!response.ok) {
+                // Handle rate limiting specifically
+                if (response.status === 429) {
+                    return response.json().then(errorData => {
+                        throw new Error(`Rate limit exceeded: ${errorData.message || 'Too many requests. Please try again later.'}`);
+                    });
+                }
                 throw new Error(`Server responded with status: ${response.status}`);
             }
             return response.json();
         })
-        .then(places => {
+        .then(data => {
             hideLoader();
             
-            if (places.length === 0) {
+            // Handle new response format with rate limiting info
+            let places;
+            let rateLimitInfo = null;
+            
+            // Check if response is the new format (object with places array) or old format (direct array)
+            if (data && typeof data === 'object' && data.places && Array.isArray(data.places)) {
+                // New format with rate limiting
+                places = data.places;
+                rateLimitInfo = data.rateLimitInfo;
+                
+                // Log rate limiting info for debugging
+                if (rateLimitInfo) {
+                    console.log('Rate limit info:', rateLimitInfo);
+                }
+            } else if (Array.isArray(data)) {
+                // Fallback for old format (direct array)
+                places = data;
+            } else {
+                // Handle unexpected format
+                console.error('Unexpected response format:', data);
+                places = [];
+            }
+            
+            if (!places || places.length === 0) {
                 placesList.innerHTML = '<p class="no-results">No places found in this area.</p>';
                 return;
             }
@@ -127,6 +156,9 @@ function fetchNearbyPlaces(longitude, latitude, radius) {
             // Display places in list and on map
             displayPlaces(places);
             initMap(latitude, longitude, places);
+            
+            // Display rate limiting info if available
+            displayRateLimitInfo(rateLimitInfo);
         })
         .catch(error => {
             hideLoader();
@@ -271,6 +303,60 @@ function showError(message) {
     setTimeout(() => {
         errorDiv.remove();
     }, 5000);
+}
+
+/**
+ * Display rate limiting information to users
+ * @param {Object} rateLimitInfo - Rate limiting information from the API
+ */
+function displayRateLimitInfo(rateLimitInfo) {
+    // Remove any existing rate limit info
+    const existingInfo = document.querySelector('.rate-limit-info');
+    if (existingInfo) {
+        existingInfo.remove();
+    }
+    
+    // Only display if rate limit info is available
+    if (!rateLimitInfo) {
+        return;
+    }
+    
+    const infoDiv = document.createElement('div');
+    infoDiv.className = 'rate-limit-info';
+    
+    const ipRemaining = rateLimitInfo.remainingIpRequests;
+    const globalRemaining = rateLimitInfo.remainingGlobalRequests;
+    
+    let message = 'Rate limit status: ';
+    if (ipRemaining !== undefined && globalRemaining !== undefined) {
+        message += `${ipRemaining} requests remaining for your IP, ${globalRemaining} globally`;
+    } else if (ipRemaining !== undefined) {
+        message += `${ipRemaining} requests remaining for your IP`;
+    } else if (globalRemaining !== undefined) {
+        message += `${globalRemaining} requests remaining globally`;
+    } else {
+        return; // No useful info to display
+    }
+    
+    infoDiv.innerHTML = `
+        <div style="background-color: #e8f4fd; border: 1px solid #bee5eb; color: #0c5460; padding: 10px; margin: 10px 0; border-radius: 4px; font-size: 14px;">
+            ℹ️ ${message}
+        </div>
+    `;
+    
+    // Add info after the form
+    if (resultsSection) {
+        resultsSection.parentNode.insertBefore(infoDiv, resultsSection);
+    } else {
+        searchForm.parentNode.insertBefore(infoDiv, searchForm.nextSibling);
+    }
+    
+    // Auto-remove after 10 seconds
+    setTimeout(() => {
+        if (infoDiv.parentNode) {
+            infoDiv.remove();
+        }
+    }, 10000);
 }
 
 /**
